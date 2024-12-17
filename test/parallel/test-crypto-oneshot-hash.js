@@ -32,12 +32,14 @@ const input = fs.readFileSync(fixtures.path('utf8_test_text.txt'));
 
 for (const method of methods) {
   for (const outputEncoding of ['buffer', 'hex', 'base64', undefined]) {
-    const oldDigest = crypto.createHash(method).update(input).digest(outputEncoding || 'hex');
-    const digestFromBuffer = crypto.hash(method, input, outputEncoding);
-    assert.deepStrictEqual(digestFromBuffer, oldDigest,
-                           `different result from ${method} with encoding ${outputEncoding}`);
-    const digestFromString = crypto.hash(method, input.toString(), outputEncoding);
-    assert.deepStrictEqual(digestFromString, oldDigest,
-                           `different result from ${method} with encoding ${outputEncoding}`);
+    if (method !== 'shake128' && method !== 'shake256' || !common.hasOpenSSL(3, 4)) {
+      const oldDigest = crypto.createHash(method).update(input).digest(outputEncoding || 'hex');
+      const digestFromBuffer = crypto.hash(method, input, outputEncoding);
+      assert.deepStrictEqual(digestFromBuffer, oldDigest,
+                             `different result from ${method} with encoding ${outputEncoding}`);
+      const digestFromString = crypto.hash(method, input.toString(), outputEncoding);
+      assert.deepStrictEqual(digestFromString, oldDigest,
+                             `different result from ${method} with encoding ${outputEncoding}`);
+    }
   }
 }
